@@ -14,4 +14,4 @@
 
 # 3.Usage
 * run main.py in each directory in src
-* Since the raw data is too large to email, so if you want to test the code, please provide the raw data according to the code for each part.
+* Since the raw data is too large to email, so if you want to test the code, please use the data in the shared link in each model.
