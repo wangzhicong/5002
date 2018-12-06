@@ -13,7 +13,7 @@ def get_features_model_dict(aq_2017,aq_2018):
     '''
     This function is used to prepare models and data for predict pollution index in the next 48 hours 
     '''
-    aq_2017['date_h'] = aq_2017['timestamp'].apply(lambda x: (x.timetuple().tm_yday)*24 + x.hour - 24)
+    aq_2017['date_h'] = aq_2017['timestamp'].apply(lambda x: (x.timetuple().tm_yday)*24 + x.hour + 24)
     aq_2018['date_h'] = aq_2018['timestamp'].apply(lambda x: (x.timetuple().tm_yday)*24+(x.hour) )
 
     #step1: Prepare data for model training
@@ -73,7 +73,7 @@ def get_features_model_dict(aq_2017,aq_2018):
     train_df_PM25[attrs_all_pm25] = train_df_PM25[attrs_all_pm25].fillna(method='ffill')
 
     date_cols_O3 = ['year','month','day','hour','weekday','date_h']
-    weather_used_O3 = ['pressure','temperature','humidity','wind_speed']
+    weather_used_O3 = ['pressure','temperature','humidity','wind_speed','bad_weather']
     train_x_O3 = train_df_O3[attrs_all_O3+list(stations_col)+date_cols_O3+weather_used_O3].values
     train_y_O3 = train_df_O3['O3_filled'].values
     val_x_O3 = val_df_O3[attrs_all_O3+list(stations_col)+date_cols_O3+weather_used_O3].values

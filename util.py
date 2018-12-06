@@ -42,10 +42,6 @@ def load_data_with_weather(start_17='2017-02-14 00:00:00',end_17='2017-07-01 00:
     test_grid = pd.read_csv('../data/gridWeather_20180501-20180502.csv')
     test_weather = pd.read_csv('../data/observedWeather_20180501-20180502.csv')
     airq_5= generate(aq_df4,'2018-05-01 00:00:00','2018-05-02 23:00:00')
-    #print("aq5 before:",airq_5.shape)
-    gt = pd.read_csv('../data/external_0501-0502.csv')
-    gt = gt.sort_values(by='time').reset_index(drop=True)
-    airq_5 = airq_5[['time','station_id']].merge(gt,how='left',on=['station_id','time'])
     #print("aq5 after:",airq_5.shape)
     aq_df4 = aq_df4.append(airq_5)
 

@@ -29,6 +29,30 @@ def rbr_predict(models,aq_test,train_df,val_df,attrs_used,attr_pred='PM10'):
         result_frames.append(features_df)
     return pd.concat(result_frames,axis=0)
 	
+def results_to_submmision(O3_result,PM25_result,PM10_result,result_all,sample):
+    O3_result = O3_result.sort_values(by='time')
+    PM10_result = PM10_result.sort_values(by='time')
+    PM25_result = PM25_result.sort_values(by='time')
+    O3_mean = O3_result.groupby('time')['O3_pred'].mean().values
+    PM10_mean = PM10_result.groupby('time')['PM10_pred'].mean().values
+    PM25_mean = PM25_result.groupby('time')['PM25_pred'].mean().values
+    zhiwuyuan_names = ['zhiwuyuan_aq#'+str(i) for i in range(48)]
+    zhiwuyuan_pd = pd.DataFrame({'test_id':zhiwuyuan_names,'PM2.5':PM25_mean,'PM10':PM10_mean,'O3':O3_mean})
+    frames = []
+    grouped= result_all.groupby('station_id')
+    count = 0
+    for name,group in grouped:
+        group = group.sort_values(by='time')
+        group = group.reset_index()
+        names = [name+'#'+str(i) for i in range(48)]
+        df_tmp = pd.DataFrame({'test_id':names,'PM2.5':group['PM25_pred'].values,'PM10':group['PM10_pred'].values,'O3':group['O3_pred'].values})
+        frames.append(df_tmp)
+
+    result_df = pd.concat(frames,axis=0)
+    result_df = pd.concat([result_df,zhiwuyuan_pd],axis=0)
+    final_result = pd.merge(sample[['test_id']],result_df,how='left',on=['test_id'])
+    return final_result
+	
 if __name__ == '__main__':
 	#load historical pollution index and weather data in uniform formate
 	aq_2018,aq_2017 = util.load_data_with_weather(start_17='2017-03-01 00:00:00',end_17='2017-05-03 12:00:00',start_18='2018-03-01 00:00:00',end_18='2018-04-01 00:00:00')
@@ -45,8 +69,13 @@ if __name__ == '__main__':
 	#save result
 	O3_result.to_csv('O3_result.csv')
 	PM10_result.to_csv('PM10_result.csv')
-	PM25_result.csv('PM25_result.csv')
+	PM25_result.to_csv('PM25_result.csv')
 
 	result_df = O3_result.merge(PM10_result,how='left',on=['station_id','time'])
-	result_df = result_df.merge(PM25_result,how='left',on=['station_id','time'])
-	result_df.to_csv('all_result.csv')
+	result_all = result_df.merge(PM25_result,how='left',on=['station_id','time'])
+	result_all.to_csv('all_result.csv')
+	
+	#convert result to submission format
+	sample = pd.read_csv('../data/sample_submission.csv')
+	final_result = results_to_submmision(O3_result,PM25_result,PM10_result,result_all,sample)
+	final_result.to_csv('submission.csv',index=False)
